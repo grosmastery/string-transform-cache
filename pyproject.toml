@@ -33,6 +33,11 @@ packages = ["src/cache_service", "src/cache_cli"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+pythonpath = ["."]
+filterwarnings = [
+    # Emitted by Starlette's TestClient itself; nothing in this project to fix.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
 
 [tool.ruff]
 line-length = 100
