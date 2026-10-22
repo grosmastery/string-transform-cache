@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from cache_service import service
 from cache_service.models import Payload, TransformedString
-from tests.conftest import SAMPLE_OUTPUT, SAMPLE_REQUEST, CountingTransformer
+from tests.helpers import SAMPLE_OUTPUT, SAMPLE_REQUEST, CountingTransformer
 
 
 class TestInterleave:
