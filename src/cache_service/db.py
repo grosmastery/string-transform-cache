@@ -2,10 +2,9 @@
 
 from collections.abc import Iterator
 
+from fastapi import Request
 from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel, create_engine
-
-from cache_service.config import get_settings
 
 
 def build_engine(database_url: str) -> Engine:
@@ -17,21 +16,13 @@ def build_engine(database_url: str) -> Engine:
     return create_engine(database_url, connect_args=connect_args, pool_pre_ping=True)
 
 
-_engine: Engine | None = None
-
-
-def get_engine() -> Engine:
-    global _engine
-    if _engine is None:
-        _engine = build_engine(get_settings().database_url)
-    return _engine
-
-
 def init_db(engine: Engine) -> None:
     # create_all is enough for this scope; a real deployment would use Alembic migrations.
     SQLModel.metadata.create_all(engine)
 
 
-def get_session() -> Iterator[Session]:
-    with Session(get_engine()) as session:
+def get_session(request: Request) -> Iterator[Session]:
+    # The engine lives on the app rather than in a module global, so each app
+    # instance (notably each test) gets its own isolated database.
+    with Session(request.app.state.engine) as session:
         yield session

@@ -1,25 +1,21 @@
 """HTTP endpoints."""
 
 import uuid
-from functools import lru_cache
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlmodel import Session
 
 from cache_service import service
-from cache_service.config import get_settings
 from cache_service.db import get_session
 from cache_service.schemas import PayloadCreate, PayloadCreated, PayloadRead
-from cache_service.transformer import Transformer, make_transformer
+from cache_service.transformer import Transformer
 
 router = APIRouter()
 
 
-@lru_cache
-def get_transformer() -> Transformer:
-    # Exposed as a dependency so tests can swap in a call-counting fake.
-    return make_transformer(get_settings().transformer_delay_seconds)
+def get_transformer(request: Request) -> Transformer:
+    return request.app.state.transformer
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
