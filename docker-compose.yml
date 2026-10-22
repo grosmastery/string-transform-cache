@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: cache
+      POSTGRES_PASSWORD: cache
+      POSTGRES_DB: cache
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cache -d cache"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    environment:
+      CACHE_DATABASE_URL: postgresql+psycopg://cache:cache@db:5432/cache
+      # Makes cache hits visibly faster than misses when trying the CLI.
+      CACHE_TRANSFORMER_DELAY_SECONDS: "0.2"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
